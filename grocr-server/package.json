@@ -4,11 +4,16 @@
   "description": "Server to authenticate and connect to api",
   "main": "app.js",
   "scripts": {
+    "start": "node app.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "express": "^4.17.1"
+    "base64-img": "^1.0.4",
+    "express": "^4.17.1",
+    "request": "^2.88.0",
+    "server": "^1.0.19",
+    "uuid": "^3.3.3"
   }
 }
