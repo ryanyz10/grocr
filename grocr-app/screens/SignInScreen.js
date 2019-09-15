@@ -4,7 +4,8 @@ import {
   StyleSheet,
   View,
   Image,
-  KeyboardAvoidingView 
+  KeyboardAvoidingView,
+  Alert
 } from 'react-native';
 
 import base64 from 'base-64';
@@ -43,6 +44,21 @@ export default class SignInScreen extends React.Component {
   };
 
   _signInAsync = async () => {
+    if(!this.state.username || !this.state.password) {
+      await Alert.alert(
+          'A field was left empty.',
+          'Please ensure all fields are filled.',
+          [
+            {
+              text: 'Cancel',
+              onPress: () => console.log('Cancel Pressed'),
+              style: 'cancel',
+            },
+            {text: 'OK', onPress: () => console.log('OK Pressed')},
+          ],
+          {cancelable: false}
+      );
+    }
     try {
       const response = await fetch('http://172.16.142.133:8000/login', {
         method: 'POST',
@@ -55,7 +71,7 @@ export default class SignInScreen extends React.Component {
       });
       let token;
       if (await !response.ok) {
-        throw new Error(`Error ${response.status} received`);
+        throw new Error(`${response}`);
       } else {
         token = response.headers.map.token;
       }

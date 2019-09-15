@@ -4,7 +4,8 @@ import {
   StyleSheet,
   View,
   Image,
-  KeyboardAvoidingView
+  KeyboardAvoidingView,
+  Alert
 } from 'react-native';
 
 import FormTextInput from '../components/FormTextInput';
@@ -44,6 +45,22 @@ export default class CreateAccountScreen extends React.Component {
   };
 
   _createUserAsync = async () => {
+    if(!this.state.name || !this.state.username ||
+        !this.state.email || !this.state.password) {
+      await Alert.alert(
+          'A field was left empty.',
+          'Please ensure all fields are filled.',
+          [
+            {
+              text: 'Cancel',
+              onPress: () => console.log('Cancel Pressed'),
+              style: 'cancel',
+            },
+            {text: 'OK', onPress: () => console.log('OK Pressed')},
+          ],
+          {cancelable: false}
+      );
+    }
     try {
       const response = await fetch('http://172.16.142.133:8000/createUser', {
         method: 'POST',
@@ -61,7 +78,7 @@ export default class CreateAccountScreen extends React.Component {
 
       let token;
       if (await !response.ok) {
-        throw new Error(`Error ${response.status} received`);
+        throw new Error(`${response.status}`);
       } else {
         token = response.headers.map.token;
       }

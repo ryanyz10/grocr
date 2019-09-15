@@ -38,7 +38,8 @@ app.post('/createUser', function(req,res){
         || !req.body.email || !req.body.name
         || !req.body.password)
     {
-        res.sendStatus(400);
+        res.status(400).send("Please fill out all fields.");
+        res.end();
     }
     else {
         let user = {};
@@ -58,7 +59,6 @@ app.post('/createUser', function(req,res){
 });
 
 app.post('/login', function(req,res) {
-    console.log(req.headers);
     let userInfo = userMap.get(req.headers.username);
     if (userInfo) {
         if(req.headers.password === userInfo.password) {
@@ -67,21 +67,23 @@ app.post('/login', function(req,res) {
             res.send(userInfo.token);
             res.end();
         }
+    } else {
+        res.status(400).send("User with provided username could not be found.");
+        res.end();
     }
-    else
-        res.sendStatus(400);
 });
 
 //LOGIN
 app.post('/*', function (req, res, next) {
     let head = req.headers;
     if (!head.token) {
-        res.sendStatus(400);
+        res.status(400).send("You are not logged in. Please log in before attempting to do such and action.")
     } else {
         if (users.has(head.token)) {
             req.token = head.token;
             next()
         } else {
+            res.status(400).send("Your user token has expired plesae create a new account").
             res.sendStatus(400);
         }
 
@@ -92,7 +94,7 @@ app.post('/*', function (req, res, next) {
 app.post('/postImage', function(req,res){
     // let id = `${users.get(req.token).username}-${new Date().getTime()}`;
     let data = {...req.body};
-    let jsonResponse = await fetch(`${FS_URL_BASE}/${EXTRACT_INPUT_DIR}/input.jpg`, {
+    let jsonResponse = fetch(`${FS_URL_BASE}/${EXTRACT_INPUT_DIR}/input.jpg`, {
         method: 'POST',
         headers: {
             'Accept': 'application/json',
@@ -112,7 +114,7 @@ app.post('/postImage', function(req,res){
         res.sendStatus(jsonResponse.data.statusCode);
     }
 
-    jsonResponse = await fetch(`${FLOW_URL_BASE}/flow/run_flow_async`, {
+    jsonResponse = fetch(`${FLOW_URL_BASE}/flow/run_flow_async`, {
         method: 'POST',
         headers: {
             'Accept': 'application/json',
@@ -133,7 +135,7 @@ app.post('/postImage', function(req,res){
 
     const jobId = jsonResponse.data.data.job_id;
     const outputDir = jsonResponse.data.data.output_folder;
-    jsonResponse = await fetch(`${FLOW_URL_BASE}/jobs/status?job_id=${jobId}`, {
+    jsonResponse = fetch(`${FLOW_URL_BASE}/jobs/status?job_id=${jobId}`, {
         method: 'GET',
         headers: {
             'Accept': 'application/json',
@@ -143,7 +145,7 @@ app.post('/postImage', function(req,res){
     });
 
     while (jsonResponse.data.state !== 'DONE') {
-        jsonResponse = await fetch(`${FLOW_URL_BASE}/jobs/status?job_id=${jobId}`, {
+        jsonResponse = fetch(`${FLOW_URL_BASE}/jobs/status?job_id=${jobId}`, {
             method: 'GET',
             headers: {
                 'Accept': 'application/json',
@@ -153,7 +155,7 @@ app.post('/postImage', function(req,res){
         });
     }
 
-    jsonResponse = await fetch(`${FLOW_URL_BASE}/flow/export/review_batch`, {
+    jsonResponse = fetch(`${FLOW_URL_BASE}/flow/export/review_batch`, {
         method: 'POST',
         headers: {
             'Accept': 'application/json',
