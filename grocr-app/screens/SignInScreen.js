@@ -43,15 +43,28 @@ export default class SignInScreen extends React.Component {
   };
 
   _signInAsync = async () => {
-    let headers = new Headers();
-    headers.append("Authorization", "Basic " + base64.encode(`${this.state.username}:${this.state.password}`));
-
-    const jsonResponse = await fetch('172.16.142.133:8000/login', {
-      method: 'POST',
-      headers: headers,
-    });
-
+    try {
+      const response = await fetch('http://172.16.142.133:8000/login', {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+          'username': `${this.state.username}`,
+          'password': `${this.state.password}`
+        }
+      });
+      let token;
+      if (await !response.ok) {
+        throw new Error(`Error ${response.status} received`);
+      } else {
+        token = response.headers.map.token;
+      }
+      await AsyncStorage.setItem('userToken', token);
+    } catch (error) {
+      console.error(error);
+    }
     // TODO: save token response to AsyncStorage
+    this.props.navigation.navigate(this.props.nextScreen);
   };
 
   _createUser = () => {

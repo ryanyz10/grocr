@@ -7,7 +7,7 @@ const port = 8000;
 const time = (new Date()).getTime();
 const seed = uuidv3(`${time}`,'1b671a64-40d5-491e-99b0-da01ff1f3341');
 const users = new Map();
-//const users = [];
+const userMap = new Map();
 
 app.use(bodyParser.json({
     limit: '50mb',
@@ -37,9 +37,27 @@ app.post('/createUser', function(req,res){
         user.products = [];
         user.pictures = [];
         users.set(tokenId, user);
-        res.json(tokenId);
+        userMap.set(req.body.username, {password:req.body.password, token: tokenId});
+        res.setHeader('Content-Type', 'application/json');
+        res.setHeader('token',tokenId);
+        res.send(tokenId);
         res.end();
     }
+});
+
+app.post('/login', function(req,res) {
+    console.log(req.headers);
+    let userInfo = userMap.get(req.headers.username);
+    if (userInfo) {
+        if(req.headers.password === userInfo.password) {
+            res.setHeader('Content-Type', 'application/json');
+            res.setHeader('token',userInfo.token);
+            res.send(userInfo.token);
+            res.end();
+        }
+    }
+    else
+        res.sendStatus(400);
 });
 
 //LOGIN
@@ -58,14 +76,6 @@ app.post('/*', function (req, res, next) {
     }
 });
 
-app.post('/login', function(req,res) {
-    if (req.token) {
-    res.json(req.token);
-    res.end();
-    }
-    else
-        res.sendStatus(400);
-});
 
 app.post('/postImage', function(req,res){
     let id = `${users.get(req.token).username}-${new Date().getTime()}`;

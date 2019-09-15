@@ -44,21 +44,31 @@ export default class CreateAccountScreen extends React.Component {
   };
 
   _createUserAsync = async () => {
-    const jsonResponse = await fetch('172.16.142.133:8000/createUser', {
-      method: 'POST',
-      headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        name: this.state.name,
-        username: this.state.username,
-        email: this.state.email,
-        password: this.state.password
-      }),
-    });
+    try {
+      const response = await fetch('http://172.16.142.133:8000/createUser', {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: this.state.name,
+          username: this.state.username,
+          email: this.state.email,
+          password: this.state.password
+        }),
+      });
 
-    // TODO get and write user token
+      let token;
+      if (await !response.ok) {
+        throw new Error(`Error ${response.status} received`);
+      } else {
+        token = response.headers.map.token;
+      }
+      await AsyncStorage.setItem('userToken', token);
+    } catch (error) {
+      console.error(error);
+    }
     this.props.navigation.navigate('App');
   };
 
@@ -76,7 +86,7 @@ export default class CreateAccountScreen extends React.Component {
           <FormTextInput
             value={this.state.username}
             onChangeText={this.handleUsernameChange.bind(this)}
-            placeholder={strings.EMAIL_PLACEHOLDER}
+            placeholder={strings.USERNAME_PLACEHOLDER}
             autoCorrect={false}
             returnKeyType="next"
           />
