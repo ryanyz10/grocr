@@ -60,7 +60,7 @@ app.post('/*', function (req, res, next) {
 
 app.post('/login', function(req,res) {
     if (req.token) {
-    res.json(users.get(req.token).name);
+    res.json(req.token);
     res.end();
     }
     else
